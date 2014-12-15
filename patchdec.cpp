@@ -12,7 +12,7 @@ using namespace std;
 
 #define itgKey "58691958710496814910943867304986071324198643072"
 #define openItgKey "65487573252940086457044055343188392138734144585"
-#define mgdKey "=$<~]3/A~5#6SOv)TsxbB*dOt5{Y->:\B&?Gu>o}(ZG0h&6"
+#define mgdKey "=$<~]3/A~5#6SOv)TsxbB*dOt5{Y->:\\B&?Gu>o}(ZG0h&6"
 
 #define itgCheckMsg ":DSPIGWITMERDIKS"
 #define mgdCheckMsg "NAK7-+-+-+-+-+-+"
@@ -130,18 +130,18 @@ int main(int argc, char *argv[])
 	SHA512_Simple(SHASecret.c_str(), subkeySize+47, SHADigest);
 	SHADigest[64] = '\0';
 
-	char tempdigest[65] = "\xB2\xBB\x6B\x4A\xBB\x73\xE0\xA0\xDC\x6E\xB3\xF9\x0A\x6B\x6E\x8F\x36\x07\x2C\x3E\xD3\x88\x61\x5B\x1B\xD5\x4C\x28\xAC\x0C\xE7\xE2\x62\xFF\x19\xB7\x46\xC5\x4E\x3B\xAC\xC3\x93\x79\x71\x41\xF8\x3C\xBA\x10\xC2\xC9\x86\xDC\xDB\x11\xDF\xF7\xC1\x5F\x7D\xBC\x36\xF4";
-
 	//strncpy((char*)AESKey, (char*)SHADigest, 24);
-	memcpy(AESKey, tempdigest, 24);
+	memcpy(AESKey, SHADigest, 24);
 	ct.key(AESKey, 24);
 
+#ifdef DEBUG
 	printf("First 6 bytes of AESKEY: ");
 	printHex(AESKey, 0, 6);
 	printf("First 6 bytes of SHA512: ");
 	printHex(SHADigest, 0, 6);
 	printf("Last 6 bytes of AESKEY: ");
 	printHex(AESKey, 58, 6);
+#endif
 
 	cout << "verifying encryption key magic...";
 	

@@ -11,13 +11,13 @@ using namespace std;
 
 #define itgKey "58691958710496814910943867304986071324198643072"
 #define openItgKey "65487573252940086457044055343188392138734144585"
-#define mgdKey "=$<~]3/A~5#6SOv)TsxbB*dOt5{Y->:\B&?Gu>o}(ZG0h&6"
+#define mgdKey "=$<~]3/A~5#6SOv)TsxbB*dOt5{Y->:\\B&?Gu>o}(ZG0h&6"
 //#define mgdKey2 "6&h0GZ(}o>uG?&B\\:>-Y{5tOd*BbxsT)vOS6#5~A/3]~<$="
 
 #define itgCheckMsg ":DSPIGWITMERDIKS"
 #define mgdCheckMsg "NAK7-+-+-+-+-+-+"
 
-const char *patchkey = mgdKey;
+const char patchkey[48] = mgdKey;
 
 void encusage(char*);
 inline void printEncIntro();
@@ -25,13 +25,16 @@ inline void printEncIntro();
 void printHex(unsigned char * buf, size_t offset, size_t len)
 {
 	for (int i = 0; i < len; i++)
-		printf("%x ", buf[offset+i]);
+		printf("%02x ", buf[offset+i]);
 	printf("\n");
 }
 
+
 int main(int argc, char *argv[])
 {
+#ifdef DEBUG
 	printf("Key: %s\n", patchkey);
+#endif
 	FILE *fdin, *fdout;
 	unsigned char subkey[1024], buffer[4080];
 	char *workingDir, *chrBuf1, *chrBuf2, *outFile;
@@ -93,22 +96,32 @@ int main(int argc, char *argv[])
 
 	// generate subkey
 	for (int i = 0; i < 1024; i++)
+	{
 		subkey[i] = (unsigned char)rand();
+	}
 	
+#ifdef DEBUG
 	printf("First 6 subkey bytes: ");
 	printHex((unsigned char *)subkey, 0, 6);
 	printf("Last 6 subkey bytes: ");
 	printHex((unsigned char*)subkey, 1018, 6);
+#endif
+	
 	
 	SHASecret.append((char*)subkey, 1024);
 	SHASecret.append(patchkey, 47);
+
+	//printHex((unsigned char*)SHASecret.c_str(), 0, 1071);
 	SHA512_Simple(SHASecret.c_str(), 1071 /*1024 + 47*/, SHADigest);
-	//memcpy(AESKey, SHADigest, 24);
+	memcpy(AESKey, SHADigest, 24);
+
+#ifdef DEBUG
+	printf("1st 6 bytes of SHA512 digest: ");
+	printHex((unsigned char *)SHADigest, 0, 64);
+#endif
 	
-	//char * tempdigest = "\x55\x48\x11\x00\x08\x74\xD5\x56\x6C\x4D\xC3\x84\xD0\x23\x8C\x77\x4A\xF5\xF5\x55\xEE\x86\x02\xDE\xF9\x49\xD1\x5B\xF2\x9B\xD7\x2E\xD4\xC8\x8D\x08\x3B\x41\x51\xE4\x8F\x3F\xA5\x4B\x24\x2F\x82\xD6\x0D\x1B\xC7\x5B\x3E\x4C\xBC\xF8\x85\x55\x34\xD8\xB1\x91\x69\xA8";
-	//char * tempdigest = "\x00\x11\x48\x55\x56\xD5\x74\x08\x84\xC3\x4D\x6C\x77\x8C\x23\xD0\x55\xF5\xF5\x4A\xDE\x02\x86\xEE\x5B\xD1\x49\xF9\x2E\xD7\x9B\xF2\x08\x8D\xC8\xD4\xE4\x51\x41\x3B\x4B\xA5\x3F\x8F\xD6\x82\x2F\x24\x5B\xC7\x1B\x0D\xF8\xBC\x4C\x3E\xD8\x34\x55\x85\xA8\x69\x91\xB1";
-	char tempdigest[65] = "\xB2\xBB\x6B\x4A\xBB\x73\xE0\xA0\xDC\x6E\xB3\xF9\x0A\x6B\x6E\x8F\x36\x07\x2C\x3E\xD3\x88\x61\x5B\x1B\xD5\x4C\x28\xAC\x0C\xE7\xE2\x62\xFF\x19\xB7\x46\xC5\x4E\x3B\xAC\xC3\x93\x79\x71\x41\xF8\x3C\xBA\x10\xC2\xC9\x86\xDC\xDB\x11\xDF\xF7\xC1\x5F\x7D\xBC\x36\xF4";
-	memcpy(AESKey, tempdigest, 24);
+	//char tempdigest[65] = "\xB2\xBB\x6B\x4A\xBB\x73\xE0\xA0\xDC\x6E\xB3\xF9\x0A\x6B\x6E\x8F\x36\x07\x2C\x3E\xD3\x88\x61\x5B\x1B\xD5\x4C\x28\xAC\x0C\xE7\xE2\x62\xFF\x19\xB7\x46\xC5\x4E\x3B\xAC\xC3\x93\x79\x71\x41\xF8\x3C\xBA\x10\xC2\xC9\x86\xDC\xDB\x11\xDF\xF7\xC1\x5F\x7D\xBC\x36\xF4";
+	//memcpy(AESKey, tempdigest, 24);
 
 	
 	//unsigned char *tempkey = (unsigned char*)"\xB2\xBB\x6B\x4A\xBB\x73\xE0\xA0\xDC\x6E\xB3\xF9\x30\x03\x00\x00\x36\x07\x2C\x3E\xD3\x88\x61\x5B";
@@ -118,11 +131,12 @@ int main(int argc, char *argv[])
 	//printf("Last 6 bytes of tempkey: ");
 	//printHex(tempkey, 18, 6);
 
+#ifdef DEBUG
 	printf("First 6 bytes of AESKEY: ");
 	printHex(AESKey, 0, 6);
 	printf("Last 6 bytes of AESKEY: ");
 	printHex(AESKey, 18, 6);
-	
+#endif
 
 	ct.key(AESKey, 24);
 
